@@ -1,0 +1,3 @@
+[submodule "external/whole_brain"]
+	path = external/whole_brain
+	url = https://github.com/dagush/WholeBrain.git
