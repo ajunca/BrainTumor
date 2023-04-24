@@ -1,0 +1,1 @@
+Brain tumor data needs to be put inside "data" folder. 
