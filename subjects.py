@@ -16,7 +16,7 @@ class SubjectMeta:
 
 # Structural Connectivity Data
 class SC:
-    weights = None  # 68*68 float value matrix
+    weights = None  # 68*68 numpy float matrix
     centres = None  # List consisting of region centers (68). Format: [region_name, x, y, z]
 
     def __init__(self, zip_filename=None):
@@ -31,7 +31,7 @@ class SC:
                 rows = contents_str.strip().split('\n')
                 data = [row.strip().split(' ') for row in rows]
                 self.weights = np.array(data, dtype=float)
-            # Read centers
+            # Read centres
             with zip_file.open('centres.txt') as centres_file:
                 contents_str = centres_file.read().decode('utf-8')
                 rows = contents_str.strip().split('\n')

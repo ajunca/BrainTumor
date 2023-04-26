@@ -34,7 +34,7 @@ subjects_sc = dict()
 #               'RTI_fiveRT', 'RTI_fiveRT_sd', 'RTI_fiveMT_mean', 'RTI_fiveMT_md', 'RTI_fiveMT_sd', 'RVP_A',
 #               'RVP_probhit', 'RVP_falsealarms', 'RVP_latancy_mean', 'RVP_latency_md', 'SOC_prob_minmoves',
 #               'SOC_meanmoves2', 'SOC_meanmoves3', 'SOC_meanmoves4', 'SOC_meanmoves5', 'SSP_spanlength']
-# We are just interested at the moment on: ['participant_id', 'fmri TR', 'tumor type & grade', 'tumor size (cub cm)']
+# We are just interested at the moment in: ['participant_id', 'fmri TR', 'tumor type & grade', 'tumor size (cub cm)']
 with open(data_subjects_tsv_path, 'r') as file:
     reader = csv.reader(file, delimiter='\t')
     # Skip tsv header
@@ -46,20 +46,16 @@ with open(data_subjects_tsv_path, 'r') as file:
 
 # Read SC Matrices for each subject (Pre and Post operational).
 # Note that post operational SC matrix is only available for SOME subjects
-def read_subjects_sc(subjects):
-    for sub in subjects_meta:
-        # Read SC Values
-        preop_zip_filename = data_subjects_path + sub.sub_id + '/ses-preop/SC.zip'
-        postop_zip_filename = data_subjects_path + sub.sub_id + '/ses-postop/SC.zip'
-        preop_sc = SC(preop_zip_filename)
-        postop_sc = None if not os.path.exists(postop_zip_filename) else SC(postop_zip_filename)
+for sub in subjects_meta:
+    # Read SC Values
+    preop_zip_filename = data_subjects_path + sub.sub_id + '/ses-preop/SC.zip'
+    postop_zip_filename = data_subjects_path + sub.sub_id + '/ses-postop/SC.zip'
+    preop_sc = SC(preop_zip_filename)
+    postop_sc = None if not os.path.exists(postop_zip_filename) else SC(postop_zip_filename)
 
-        # Store SC matrices
-        subjects_sc[sub.sub_id] = [preop_sc, postop_sc]
+    # Store SC matrices
+    subjects_sc[sub.sub_id] = [preop_sc, postop_sc]
 
-
-# Perform the SC matrices reading
-read_subjects_sc(subjects_meta)
 
 
 print("************************* Subjects Info *************************")
