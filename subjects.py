@@ -42,6 +42,27 @@ class SC:
                 assert len(self.centres) == 68
 
 
+class TS:
+    data = None
+
+    def __init__(self, roits_filename=None):
+        if roits_filename:
+            with open(roits_filename, 'r') as file:
+                lines = file.readlines()
+                self.data = []
+                for line in lines:
+                    values = line.split()
+                    entry = np.array([float(v) for v in values])
+                    print(len(entry))
+                    #assert len(entry) == 68
+                    self.data.append(entry)
+
+
+# Class storing all related Matlab data
+class FcMat:
+    def __init__(self):
+
+
 def pretty_print_subjects(subjects):
     print('{:<15} {:<15} {:<30} {:<15}'.format(
         'ID', 'FMRI_TR (ms)', 'TYPE', 'VOLUME (cm³)',

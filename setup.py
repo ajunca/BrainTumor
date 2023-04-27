@@ -19,6 +19,9 @@ subjects_meta = []
 # IMPORTANT: Only SOME subjects have post-operational SC
 subjects_sc = dict()
 
+# Subjects BOLD time series [pre-operational, post-operational] indexed by subject's id.
+subjects_ts = dict()
+
 # Parcellation data
 #parcellation = []
 
@@ -44,18 +47,32 @@ with open(data_subjects_tsv_path, 'r') as file:
         subjects_meta.append(sub)
 
 
-# Read SC Matrices for each subject (Pre and Post operational).
-# Note that post operational SC matrix is only available for SOME subjects
+# Read SC Matrices and BOLD time series for each subject (Pre and Post operational).
+# Note that post operational data is only available for SOME subjects
 for sub in subjects_meta:
     # Read SC Values
-    preop_zip_filename = data_subjects_path + sub.sub_id + '/ses-preop/SC.zip'
-    postop_zip_filename = data_subjects_path + sub.sub_id + '/ses-postop/SC.zip'
-    preop_sc = SC(preop_zip_filename)
-    postop_sc = None if not os.path.exists(postop_zip_filename) else SC(postop_zip_filename)
+    preop_sc_zip_filename = data_subjects_path + sub.sub_id + '/ses-preop/SC.zip'
+    postop_sc_zip_filename = data_subjects_path + sub.sub_id + '/ses-postop/SC.zip'
+    preop_roits_filename = data_subjects_path + sub.sub_id + '/ses-preop/ROIts.dat'
+    postop_roits_filename = data_subjects_path + sub.sub_id + '/ses-postop/ROIts.dat'
+
+    has_postop_data = os.path.exists(postop_sc_zip_filename)
+
+    # Every subject has pre-operational data
+    preop_sc = SC(preop_sc_zip_filename)
+    postop_sc = None
+    preop_ts = TS(preop_roits_filename)
+    postop_ts = None
+
+    # Only some have post-operational data
+    if has_postop_data:
+        postop_sc = SC(postop_sc_zip_filename)
+        postop_ts = TS(postop_roits_filename)
 
     # Store SC matrices
     subjects_sc[sub.sub_id] = [preop_sc, postop_sc]
-
+    # Store BOLD time series
+    subjects_ts[sub.sub_id] = [preop_ts, postop_ts]
 
 
 print("************************* Subjects Info *************************")
