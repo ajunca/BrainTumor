@@ -75,6 +75,9 @@ class Subject:
     def get_id(self):
         return None if not self.meta else self.meta.sub_id
 
+    def get_fmri_tr(self):
+        return self.meta.fmri_tr
+
     def is_control(self):
         return 'CON' in self.meta.sub_id
 
@@ -86,8 +89,8 @@ class Subject:
         mat_contents = loadmat(self.meta.dir_path + 'ses-preop/FC.mat')
         self.preop_data = SubjectData(
             sc_dk68,
-            mat_contents['' + self.meta.sub_id + 'T1_ROIts'],
-            mat_contents['' + self.meta.sub_id + 'T1_ROIts_DK68']
+            np.transpose(mat_contents['' + self.meta.sub_id + 'T1_ROIts']),
+            np.transpose(mat_contents['' + self.meta.sub_id + 'T1_ROIts_DK68'])
         )
 
 class Subjects:
@@ -143,6 +146,7 @@ class Subjects:
 
     def get_subject_by_id(self, sub_id):
         return self.data[sub_id]
+
 
 # class TS:
 #     data = None
