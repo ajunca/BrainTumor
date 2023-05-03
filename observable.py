@@ -6,11 +6,13 @@ class Observable:
     def __init__(self, bold_filter=None):
         self.bold_filter = bold_filter
 
-    def get_bold_filter(self):
+    @property
+    def bold_filter(self):
         return self.bold_filter
 
-    def set_bold_filter(self, bold_filter):
-        self.bold_filter = bold_filter
+    @bold_filter.setter
+    def bold_filter(self, value):
+        self.bold_filter = value
 
     def from_fmri(self, bold_signal):
         # First check that there are no NaNs in the signal. If NaNs found, rise a warning and return None

@@ -16,6 +16,46 @@ class BoldBandPassFilter:
         self.k = k                                              # 2nd order butterworth filter
         self.remove_strong_artifacts = remove_strong_artifacts  # If None, remove strong artifacts is not applied
 
+    @property
+    def tr(self):
+        return self.tr
+
+    @tr.setter
+    def tr(self, value):
+        self.tr = value
+
+    @property
+    def flp(self):
+        return self.flp
+
+    @flp.setter
+    def flp(self, value):
+        self.flp = value
+
+    @property
+    def fhi(self):
+        return self.fhi
+
+    @fhi.setter
+    def fhi(self, value):
+        self.fhi = value
+
+    @property
+    def k(self):
+        return self.k
+
+    @k.setter
+    def k(self, value):
+        self.k = value
+
+    @property
+    def remove_strong_artifacts(self):
+        return self.remove_strong_artifacts
+
+    @remove_strong_artifacts.setter
+    def remove_strong_artifacts(self, value):
+        self.remove_strong_artifacts = value
+
     def apply_filter(self, bold_signal):
         (N, Tmax) = bold_signal.shape
         fnq = 1. / (2. * self.tr)  # Nyquist Frequency
