@@ -9,11 +9,11 @@ data_root_path = "data/TVB_brain_tumor/"
 data_subjects_path = data_root_path + "derivatives/TVB/"
 
 # Configure BOLD filters
-import WholeBrain.BOLDFilters as filters
-apply_bold_filters = False
-filters.k = 2
-filters.flp = .008
-filters.fhi = .08
+# import WholeBrain.BOLDFilters as filters
+# apply_bold_filters = False
+# filters.k = 2
+# filters.flp = .008
+# filters.fhi = .08
 # Note for filters.TR: Data has different fMRI TR values for different subjects (2100 and 2400ms),
 # we will define it for each user when used
 

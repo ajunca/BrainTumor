@@ -42,10 +42,6 @@ class SubjectMeta:
 
 
 class SubjectData:
-    sc_dk68 = None
-    ts = None
-    ts_dk68 = None
-
     def __init__(self, sc_dk68, ts, ts_dk68):
         self.sc_dk68 = sc_dk68
         self.ts = ts
@@ -53,12 +49,10 @@ class SubjectData:
 
 
 class Subject:
-    meta = None
-    preop_data = None
-    postop_data = None
-
     def __init__(self):
-        pass
+        self.meta = None
+        self.preop_data = None
+        self.postop_data = None
 
     def initialize(self,
                    sub_id,
@@ -78,6 +72,12 @@ class Subject:
     def get_fmri_tr(self):
         return self.meta.fmri_tr
 
+    def get_tumor_type_and_grade(self):
+        return self.meta.tumor_type_and_grade
+
+    def get_tumor_size(self):
+        return self.meta.tumor_size
+
     def is_control(self):
         return 'CON' in self.meta.sub_id
 
@@ -94,7 +94,6 @@ class Subject:
         )
 
 class Subjects:
-    data = None
 
     def __init__(self):
         self.data = dict()
@@ -147,6 +146,18 @@ class Subjects:
     def get_subject_by_id(self, sub_id):
         return self.data[sub_id]
 
+    def filter_preop_ts_dk68(self):
+        result = dict()
+        for sub in self.data.values():
+            result[sub.get_id()] = sub.preop_data.ts_dk68.copy()
+        return result
+
+    def filter_subjects(self, sub_filter):
+        result = Subjects()
+        for k, v in self.data.items():
+            if sub_filter(v):
+                result.data[k] = v
+        return result
 
 # class TS:
 #     data = None

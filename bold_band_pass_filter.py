@@ -6,55 +6,56 @@ import warnings
 import numpy as np
 from scipy.signal import butter, detrend, filtfilt
 from WholeBrain.Utils import demean
+from signal_filter import SignalFilter
 
 
-class BoldBandPassFilter:
+class BoldBandPassFilter(SignalFilter):
     def __init__(self, tr=2.0, flp=0.02, fhi=0.1, k=2, remove_strong_artifacts=3.0):
-        self.tr = tr                                            # Sampling interval
-        self.flp = flp                                          # lowpass frequency of filter
-        self.fhi = fhi                                          # highpass frequency of filter
-        self.k = k                                              # 2nd order butterworth filter
-        self.remove_strong_artifacts = remove_strong_artifacts  # If None, remove strong artifacts is not applied
+        self._tr = tr                                            # Sampling interval
+        self._flp = flp                                          # lowpass frequency of filter
+        self._fhi = fhi                                          # highpass frequency of filter
+        self._k = k                                              # 2nd order butterworth filter
+        self._remove_strong_artifacts = remove_strong_artifacts  # If None, remove strong artifacts is not applied
 
     @property
     def tr(self):
-        return self.tr
+        return self._tr
 
     @tr.setter
     def tr(self, value):
-        self.tr = value
+        self._tr = value
 
     @property
     def flp(self):
-        return self.flp
+        return self._flp
 
     @flp.setter
     def flp(self, value):
-        self.flp = value
+        self._flp = value
 
     @property
     def fhi(self):
-        return self.fhi
+        return self._fhi
 
     @fhi.setter
     def fhi(self, value):
-        self.fhi = value
+        self._fhi = value
 
     @property
     def k(self):
-        return self.k
+        return self._k
 
     @k.setter
     def k(self, value):
-        self.k = value
+        self._k = value
 
     @property
     def remove_strong_artifacts(self):
-        return self.remove_strong_artifacts
+        return self._remove_strong_artifacts
 
     @remove_strong_artifacts.setter
     def remove_strong_artifacts(self, value):
-        self.remove_strong_artifacts = value
+        self._remove_strong_artifacts = value
 
     def apply_filter(self, bold_signal):
         (N, Tmax) = bold_signal.shape
