@@ -1,6 +1,9 @@
-# Adapted from Whole Brain lib
-# https://github.com/dagush/WholeBrain/blob/master/WholeBrain/BOLDFilters.py
-# TODO: More description needed
+#####################################################################################
+# Based on:
+#   https://github.com/dagush/WholeBrain/blob/6e8ffe77b7c65fa053f4ca8804cd1c8cb025e263/WholeBrain/BOLDFilters.py
+#
+# Adapted/Refactored from Gustavo Patow code by Albert Juncà
+#####################################################################################
 
 import warnings
 import numpy as np
@@ -8,14 +11,22 @@ from scipy.signal import butter, detrend, filtfilt
 from WholeBrain.Utils import demean
 from signal_filter import SignalFilter
 
-
+# At the moment this is the only signal filter we have. It takes 5 configuration parameters and transforms an input
+# signal as needed.
+# Parameters:
+#   tr: fMRI TR time in seconds. Default 2.0s
+#   flp: lowpass frequency of filter. Default: 0.02Hz
+#   fhi: highpass frequency of filter. Default: 0.1Hz
+#   k: k order butterworth filter. Default: 2
+#   remove_strong_artifacts: Clamp artifacts "remove_strong_artifacts" standard deviations apart. Not applied if None.
+#       Default: 3.0
 class BoldBandPassFilter(SignalFilter):
     def __init__(self, tr=2.0, flp=0.02, fhi=0.1, k=2, remove_strong_artifacts=3.0):
-        self._tr = tr                                            # Sampling interval
-        self._flp = flp                                          # lowpass frequency of filter
-        self._fhi = fhi                                          # highpass frequency of filter
-        self._k = k                                              # 2nd order butterworth filter
-        self._remove_strong_artifacts = remove_strong_artifacts  # If None, remove strong artifacts is not applied
+        self._tr = tr
+        self._flp = flp
+        self._fhi = fhi
+        self._k = k
+        self._remove_strong_artifacts = remove_strong_artifacts
 
     @property
     def tr(self):
@@ -57,6 +68,7 @@ class BoldBandPassFilter(SignalFilter):
     def remove_strong_artifacts(self, value):
         self._remove_strong_artifacts = value
 
+    # Transforms the input signal based on the configuration parameters
     def apply_filter(self, bold_signal):
         (N, Tmax) = bold_signal.shape
         fnq = 1. / (2. * self.tr)  # Nyquist Frequency

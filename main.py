@@ -7,8 +7,10 @@
 from setup import *
 # import WholeBrain.Observables.FC as FCObservable
 # import WholeBrain.Observables.Metastability as MSObservable
+import WholeBrain.Observables.intrinsicIgnition as ISObservable
 from functional_connectivity import FunctionalConnectivity
 from metastability import Metastability
+from event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
 from bold_band_pass_filter import BoldBandPassFilter
 import matplotlib.pyplot as plt
 
@@ -40,6 +42,29 @@ def compute_preop_metastability_dk68():
         )
         result[sub_id] = ms_dk68
     return result
+
+def compute_preop_event_based_intrinsic_ignition():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+    ebig_operator = EventBasedIntrinsicIgnition()
+
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        # Compute functional connectivity. Note signal are already filtered, so no need to do it here
+        ebig_dk68 = ebig_operator.from_fmri(ts_dk68)
+        result[sub_id] = ebig_dk68
+
+    return result
+
+def compute_preop_event_based_intrinsic_ignition_2():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+    ebig_operator = EventBasedIntrinsicIgnition()
+
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        ebig = ISObservable.from_fMRI(ts_dk68, applyFilters=False, removeStrongArtefacts=False)
+        result[sub_id] = ebig
+    return result
+
 
 def plot_metastability_box(data):
     fig, ax = plt.subplots()
@@ -92,3 +117,7 @@ if __name__ == '__main__':
     preop_meta_dk68 = compute_preop_metastability_dk68()
     plot_metastability_box(preop_meta_dk68)
     plot_metastability(preop_meta_dk68)
+
+    preop_ebig_dk68 = compute_preop_event_based_intrinsic_ignition()
+    preop_ebig_dk68_2 = compute_preop_event_based_intrinsic_ignition_2()
+

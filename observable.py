@@ -1,19 +1,25 @@
+#####################################################################################
+# Based on:
+#   https://github.com/dagush/WholeBrain/tree/6e8ffe77b7c65fa053f4ca8804cd1c8cb025e263/WholeBrain
+#
+# Adapted/Refactored from Gustavo Patow code by Albert Juncà
+#####################################################################################
+
 import warnings
 import numpy as np
 
-
+# Abstract class for Observables. At the moment it has a main method "from_fmri" that takes the signal and the filter
+# as parameters and outputs the result if computable (or None if some problem occurred). Each implementation has to
+# define "_compute_from_fmri" method.
+#
+# NOTE: At the moment every Observable subclass outputs its out result format, so maybe at a future we have to
+# standardize it somehow...
+#
+# MORE NOTES: Maybe it should be called ObservableOperator as it operates on signals and spits the result but is not
+# itself and Observable(?). Also note that the implementation is as this to maximize the portability with the none
+# class based library.
 class Observable:
-    # def __init__(self, bold_filter=None):
-    #     self.bold_filter = bold_filter
-    #
-    # @property
-    # def bold_filter(self):
-    #     return self.bold_filter
-    #
-    # @bold_filter.setter
-    # def bold_filter(self, value):
-    #     self.bold_filter = value
-
+    # Main method to compute the Observable from an fMRI BOLD signal.
     def from_fmri(self, bold_signal, bold_filter=None):
         # First check that there are no NaNs in the signal. If NaNs found, rise a warning and return None
         if np.isnan(bold_signal).any():

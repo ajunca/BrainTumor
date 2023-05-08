@@ -1,6 +1,14 @@
+#####################################################################################
+# Based on:
+#   https://github.com/dagush/WholeBrain/blob/6e8ffe77b7c65fa053f4ca8804cd1c8cb025e263/WholeBrain/Observables/intrinsicIgnition.py
+#
+# Adapted/Refactored from Gustavo Patow code by Albert Juncà
+#####################################################################################
+
 
 from intrinsic_ignition import IntrinsicIgnition
 import numpy as np
+
 
 class EventBasedIntrinsicIgnition(IntrinsicIgnition):
     def _compute_integration(self, node_signal, events, n, t_max):

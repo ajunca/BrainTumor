@@ -1,3 +1,43 @@
+#####################################################################################
+# Based on:
+#   https://github.com/dagush/WholeBrain/blob/6e8ffe77b7c65fa053f4ca8804cd1c8cb025e263/WholeBrain/Observables/intrinsicIgnition.py
+#
+# Adapted/Refactored from Gustavo Patow code by Albert Juncà
+#####################################################################################
+
+# ----------------------------------- ORIGINAL HEADER ----------------------------------
+# --------------------------------------------------------------------------------------
+# Full pipeline for Intrinsic Ignition computation
+#
+# From:
+# [DecoKringelbach2017] Hierarchy of Information Processing in the Brain: A Novel ‘Intrinsic Ignition’ Framework,
+# Gustavo Deco and Morten L. Kringelbach, Neuron, Volume 94, Issue 5, 961 - 968
+#
+# [DecoEtAl2017] Novel Intrinsic Ignition Method Measuring Local-Global Integration Characterizes Wakefulness and
+# Deep Sleep, Gustavo Deco, Enzo Tagliazucchi, Helmut Laufs, Ana Sanjuán and Morten L. Kringelbach
+# eNeuro 15 September 2017, 4 (5) ENEURO.0106-17.2017; DOI: https://doi.org/10.1523/ENEURO.0106-17.2017
+#
+# [EscrichsEtAl2019] Characterizing the Dynamical Complexity Underlying Meditation, Escrichs A, Sanjuán A, Atasoy S,
+# López-González A, Garrido C, Càmara E, Deco, G. Front. Syst. Neurosci., 10 July 2019
+# DOI: https://doi.org/10.3389/fnsys.2019.00027
+#
+# [EscrichsEtAl2021] Whole-Brain Dynamics in Aging: Disruptions in Functional Connectivity and the Role of the Rich
+# Club, Anira Escrichs, Carles Biarnes, Josep Garre-Olmo, José Manuel Fernández-Real, Rafel Ramos, Reinald Pamplona,
+# Ramon Brugada, Joaquin Serena, Lluís Ramió-Torrentà, Gabriel Coll-De-Tuero, Luís Gallart, Jordi Barretina, Joan C
+# Vilanova, Jordi Mayneris-Perxachs, Marco Essig, Chase R Figley, Salvador Pedraza, Josep Puig, Gustavo Deco
+# Cereb Cortex. 2021 Mar 31;31(5):2466-2481. doi: 10.1093/cercor/bhaa367
+#
+# Code by Gustavo Deco and Anira Escrichs
+# Adapted to python by Gustavo Patow
+#
+# By changing the modality variable we can change the way the ignition is computed:
+#   - EventBasedIntrinsicIgnition: computes the FC at each time-point, as explained in [DecoKringelbach2017]
+#   and [EscrichsEtAl2019]
+#   - PhaseBasedIntrinsicIgnition: uses the phase lock matrix at each time-point, as described in [DecoEtAl2017]
+#   and [EscrichsEtAl2021]
+# --------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
+
 from observable import Observable
 import numpy as np
 
@@ -7,6 +47,13 @@ import numpy as np
 import matlab.engine
 eng = matlab.engine.start_matlab()
 # ==================================
+
+
+def dmperm(A):
+    (useless1, p, useless2, r) = eng.dmperm(eng.double(A), nargout=4)  # Apply MATLABs dmperm
+    outp = np.asarray(p).flatten()
+    outr = np.asarray(r).flatten()
+    return outp, outr
 
 
 class IntrinsicIgnition(Observable):
@@ -23,28 +70,22 @@ class IntrinsicIgnition(Observable):
         assert (value >= 0)
         self._ignition_tr_length = value
 
-    def _deperm(self, a):
-        (useless1, p, useless2, r) = eng.dmperm(eng.double(a), nargout=4)  # Apply MATLABs dmperm
-        outp = np.asarray(p).flatten()
-        outr = np.asarray(r).flatten()
-        return outp, outr
-
-    def _get_components(self, a):
-        if a.shape[0] != a.shape[1]:
+    def _get_components(self, A):
+        if A.shape[0] != A.shape[1]:
             raise Exception('Adjacency matrix is not square')
 
-        if not np.any(a - np.triu(a)):
-            a = np.logical_or(a, a.T)
-            a = a.astype(np.int64)
+        if not np.any(A - np.triu(A)):
+            A = np.logical_or(A, A.T)
+            A = A.astype(np.int64)
 
         # if main diagonal of adj do not contain all ones, i.e., autoloops
-        if np.sum(np.diag(a)) != a.shape[0]:
+        if np.sum(np.diag(A)) != A.shape[0]:
             # the main diagonal is set to ones
-            a = np.logical_or(a, np.eye(a.shape[0]))
-            a = a.astype(np.int64)
+            A = np.logical_or(A, np.eye(A.shape[0]))
+            A = A.astype(np.int64)
 
         # i = Integration.IntegrationFromFC_Fast(A, nbins=20)
-        p, r = self._dmperm(a)
+        p, r = dmperm(A)
         # p indicates a permutation (along rows and columns)
         # r is a vector indicating the component boundaries
         # List including the number of nodes of each component. ith entry is r(i+1)-r(i)
@@ -52,7 +93,7 @@ class IntrinsicIgnition(Observable):
         # Number of components found.
         num_comps = np.size(comp_sizes)
         # initialization
-        comps = np.zeros(a.shape[0])
+        comps = np.zeros(A.shape[0])
         # first position of each component is set to one
         comps[r[0:num_comps].astype(int)-1] = np.ones(num_comps)
         # cumulative sum produces a label for each component (in a consecutive way)
