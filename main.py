@@ -66,7 +66,7 @@ def compute_preop_event_based_intrinsic_ignition_2():
     return result
 
 
-def plot_metastability_box(data):
+def plot_metastability_box(subjects_ms):
     fig, ax = plt.subplots()
 
     s_none = subjects.filter_subjects(lambda sub: sub.get_tumor_type_and_grade() == 'none')
@@ -77,13 +77,13 @@ def plot_metastability_box(data):
     s_plus_20_cm3 = subjects.filter_subjects(lambda sub: sub.get_tumor_size() >= 20.0)
     s_plus_30_cm3 = subjects.filter_subjects(lambda sub: sub.get_tumor_size() >= 30.0)
 
-    data_none = {k: v for k, v in data.items() if k in s_none.data}
-    data_tumor = {k: v for k, v in data.items() if k in s_tumor.data}
-    data_meningioma = {k: v for k, v in data.items() if k in s_meningioma.data}
-    data_glioma = {k: v for k, v in data.items() if k in s_glioma.data}
-    data_plus_15_cm3 = {k: v for k, v in data.items() if k in s_plus_15_cm3.data}
-    data_plus_20_cm3 = {k: v for k, v in data.items() if k in s_plus_20_cm3.data}
-    data_plus_30_cm3 = {k: v for k, v in data.items() if k in s_plus_30_cm3.data}
+    data_none = {k: v.metastability for k, v in subjects_ms.items() if k in s_none.data}
+    data_tumor = {k: v.metastability for k, v in subjects_ms.items() if k in s_tumor.data}
+    data_meningioma = {k: v.metastability for k, v in subjects_ms.items() if k in s_meningioma.data}
+    data_glioma = {k: v.metastability for k, v in subjects_ms.items() if k in s_glioma.data}
+    data_plus_15_cm3 = {k: v.metastability for k, v in subjects_ms.items() if k in s_plus_15_cm3.data}
+    data_plus_20_cm3 = {k: v.metastability for k, v in subjects_ms.items() if k in s_plus_20_cm3.data}
+    data_plus_30_cm3 = {k: v.metastability for k, v in subjects_ms.items() if k in s_plus_30_cm3.data}
 
     # Convert data to nparray
     split_data = {
@@ -99,10 +99,13 @@ def plot_metastability_box(data):
 
     plt.show()
 
-def plot_metastability(data):
+def plot_metastability(subjects_ms):
     fig = plt.plot()
 
-    plt.barh(list(data.keys()), list(data.values()))
+    plt.barh(
+        list(subjects_ms.keys()),
+        list({v.metastability for k, v in subjects_ms.items()})
+    )
     plt.xlabel('Metastability')
     plt.ylabel('Subject ID')
 

@@ -30,14 +30,22 @@
 # --------------------------------------------------------------------------
 
 
-from observable import Observable
+from observable import Observable, ObservableResult
 from scipy import signal
 from WholeBrain.Utils import demean
 import numpy as np
 
 
+class MetastabilityResult(ObservableResult):
+    def __init__(self):
+        super().__init__(name='Metastability')
+
+    @property
+    def metastability(self):
+        return self._data['metastability']
+
 class Metastability(Observable):
-    def _compute_from_fmri(self, bold_signal):
+    def _compute_from_fmri(self, bold_signal) -> MetastabilityResult:
         (n, t_max) = bold_signal.shape
         npattmax = t_max - 19    # Calculates the size of phfcd vector
 
@@ -59,4 +67,7 @@ class Metastability(Observable):
             sync[t - 10] = abs(ku)
 
         # Return the metastability value
-        return np.std(sync)
+        # return np.std(sync)
+        result = MetastabilityResult()
+        result.data['metastability'] = np.std(sync)
+        return result

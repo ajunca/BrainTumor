@@ -38,7 +38,7 @@
 # --------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------
 
-from observable import Observable
+from observable import Observable, ObservableResult
 import numpy as np
 
 # ==================================
@@ -49,11 +49,33 @@ eng = matlab.engine.start_matlab()
 # ==================================
 
 
+# TODO: Probably we should move this to Utils
 def dmperm(A):
     (useless1, p, useless2, r) = eng.dmperm(eng.double(A), nargout=4)  # Apply MATLABs dmperm
     outp = np.asarray(p).flatten()
     outr = np.asarray(r).flatten()
     return outp, outr
+
+
+class IntrinsicIgnitionResult(ObservableResult):
+    def __init__(self):
+        super().__init__(name='IntrinsicIgnition')
+
+    @property
+    def mevokedinteg(self):
+        return self._data['mevokedinteg']
+
+    @property
+    def stdevokedinteg(self):
+        return self._data['stdevokedinteg']
+
+    @property
+    def fanofactorevokedinteg(self):
+        return self._data['fanofactorevokedinteg']
+
+    @property
+    def mignition(self):
+        return self._data['mignition']
 
 
 class IntrinsicIgnition(Observable):
@@ -184,7 +206,7 @@ class IntrinsicIgnition(Observable):
     # 'SubjEvents'
     # mean and variability of ignition across nodes for each single subject (an = across nodes)
     # 'mignition_an', 'stdignition_an'
-    def _compute_from_fmri(self, node_signal):
+    def _compute_from_fmri(self, node_signal) -> IntrinsicIgnitionResult:
         (n, t_max) = node_signal.shape
         # Both alternatives, event-based and phase-based, require the events for the ignition.
         events = self._compute_events(node_signal, n, t_max)
@@ -204,9 +226,9 @@ class IntrinsicIgnition(Observable):
         # Mean and std ignition for a subject across nodes (an)
         mignition_an = np.mean(mevokedinteg)
 
-        return {
-            'mevokedinteg': mevokedinteg_ss,
-            'stdevokedinteg': stdevokedinteg_ss,
-            'fanofactorevokedinteg': fanofactorevokedinteg_ss,
-            'mignition': mignition_an
-        }
+        result = IntrinsicIgnitionResult()
+        result.data['mevokedinteg'] = mevokedinteg_ss
+        result.data['stdevokedinteg'] = stdevokedinteg_ss
+        result.data['fanofactorevokedinteg'] = fanofactorevokedinteg_ss
+        result.data['mignition'] = mignition_an
+        return result

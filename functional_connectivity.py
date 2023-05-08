@@ -5,12 +5,24 @@
 # Adapted/Refactored from Gustavo Patow code by Albert Juncà
 #####################################################################################
 
-from observable import Observable
+from observable import Observable, ObservableResult
 import numpy as np
+
+
+class FunctionalConnectivityResult(ObservableResult):
+    def __init__(self):
+        super().__init__(name='FunctionalConnectivity')
+
+    @property
+    def fc(self):
+        return self._data['fc']
 
 
 class FunctionalConnectivity(Observable):
     # Apply the observable operator
-    def _compute_from_fmri(self, bold_signal):
+    def _compute_from_fmri(self, bold_signal) -> FunctionalConnectivityResult:
         cc = np.corrcoef(bold_signal, rowvar=True)
-        return cc
+        # return cc
+        result = FunctionalConnectivityResult()
+        result.data['fc'] = cc
+        return result
