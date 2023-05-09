@@ -8,10 +8,10 @@ from setup import *
 # import WholeBrain.Observables.FC as FCObservable
 # import WholeBrain.Observables.Metastability as MSObservable
 import WholeBrain.Observables.intrinsicIgnition as ISObservable
-from functional_connectivity import FunctionalConnectivity
-from metastability import Metastability
-from event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
-from bold_band_pass_filter import BoldBandPassFilter
+from Observables.functional_connectivity import FunctionalConnectivity
+from Observables.metastability import Metastability
+from Observables.event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
+from Filters.bold_band_pass_filter import BoldBandPassFilter
 import matplotlib.pyplot as plt
 
 
