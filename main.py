@@ -11,6 +11,7 @@ import WholeBrain.Observables.intrinsicIgnition as ISObservable
 from Observables.functional_connectivity import FunctionalConnectivity
 from Observables.metastability import Metastability
 from Observables.event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
+from WholeBrain.Observables.phase_based_intrinsic_ignition import PhaseBasedIntrinsicIgnition
 from Filters.bold_band_pass_filter import BoldBandPassFilter
 import matplotlib.pyplot as plt
 
@@ -58,13 +59,34 @@ def compute_preop_event_based_intrinsic_ignition():
 def compute_preop_event_based_intrinsic_ignition_2():
     preop_ts_dk68 = subjects.filter_preop_ts_dk68()
     result = dict()
-    ebig_operator = EventBasedIntrinsicIgnition()
 
+    ISObservable.modality = ISObservable.EventBasedIntrinsicIgnition
     for sub_id, ts_dk68 in preop_ts_dk68.items():
         ebig = ISObservable.from_fMRI(ts_dk68, applyFilters=False, removeStrongArtefacts=False)
         result[sub_id] = ebig
     return result
 
+def compute_preop_phase_based_intrinsic_ignition():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+    ebig_operator = PhaseBasedIntrinsicIgnition()
+
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        # Compute functional connectivity. Note signal are already filtered, so no need to do it here
+        ebig_dk68 = ebig_operator.from_fmri(ts_dk68)
+        result[sub_id] = ebig_dk68
+
+    return result
+
+def compute_preop_phase_based_intrinsic_ignition_2():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+
+    ISObservable.modality = ISObservable.PhaseBasedIntrinsicIgnition
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        ebig = ISObservable.from_fMRI(ts_dk68, applyFilters=False, removeStrongArtefacts=False)
+        result[sub_id] = ebig
+    return result
 
 def plot_metastability_box(subjects_ms):
     fig, ax = plt.subplots()
@@ -114,13 +136,16 @@ def plot_metastability(subjects_ms):
 if __name__ == '__main__':
 
     # We then compute the functional connectivity matrices from the filtered BOLD signals
-    preop_fc_dk68_dict = compute_preop_fc_dk68()
+    # preop_fc_dk68_dict = compute_preop_fc_dk68()
 
     # Compute metastability
-    preop_meta_dk68 = compute_preop_metastability_dk68()
-    plot_metastability_box(preop_meta_dk68)
-    plot_metastability(preop_meta_dk68)
+    # preop_meta_dk68 = compute_preop_metastability_dk68()
+    # plot_metastability_box(preop_meta_dk68)
+    # plot_metastability(preop_meta_dk68)
 
-    preop_ebig_dk68 = compute_preop_event_based_intrinsic_ignition()
-    preop_ebig_dk68_2 = compute_preop_event_based_intrinsic_ignition_2()
+    # preop_ebig_dk68 = compute_preop_event_based_intrinsic_ignition()
+    # preop_ebig_dk68_2 = compute_preop_event_based_intrinsic_ignition_2()
+
+    preop_pbig_dk68 = compute_preop_phase_based_intrinsic_ignition()
+    #preop_pbig_dk68_2 = compute_preop_phase_based_intrinsic_ignition_2()
 
