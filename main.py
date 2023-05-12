@@ -4,7 +4,6 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 # import WholeBrain.Utils.plotSC
-from setup import *
 # import WholeBrain.Observables.FC as FCObservable
 # import WholeBrain.Observables.Metastability as MSObservable
 import WholeBrain.Observables.intrinsicIgnition as ISObservable
@@ -12,7 +11,7 @@ from Observables.functional_connectivity import FunctionalConnectivity
 from Observables.metastability import Metastability
 from Observables.event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
 from WholeBrain.Observables.phase_based_intrinsic_ignition import PhaseBasedIntrinsicIgnition
-from Filters.bold_band_pass_filter import BoldBandPassFilter
+from Filters.bold_band_pass_filter import BOLDBandPassFilter
 import matplotlib.pyplot as plt
 
 
@@ -23,7 +22,7 @@ def compute_preop_fc_dk68():
 
     for sub_id, ts_dk68 in preop_ts_dk68.items():
         # Compute functional connectivity. Note signal are already filtered, so no need to do it here
-        fc_dk68 = fc_operator.from_fmri(ts_dk68)
+        fc_dk68 = fc_operator.from_fMRI(ts_dk68)
         result[sub_id] = fc_dk68
 
     return result
@@ -37,9 +36,9 @@ def compute_preop_metastability_dk68():
 
     for sub_id, ts_dk68 in preop_ts_dk68.items():
         tr = subjects.get_subject_by_id(sub_id).get_fmri_tr()/1000.0
-        ms_dk68 = ms_operator.from_fmri(
+        ms_dk68 = ms_operator.from_fMRI(
             ts_dk68,
-            bold_filter=BoldBandPassFilter(tr=tr, flp=0.007, fhi=0.07, k=2, remove_strong_artifacts=3.0)
+            bold_filter=BOLDBandPassFilter(tr=tr, flp=0.007, fhi=0.07, k=2, remove_strong_artifacts=3.0)
         )
         result[sub_id] = ms_dk68
     return result
@@ -51,7 +50,7 @@ def compute_preop_event_based_intrinsic_ignition():
 
     for sub_id, ts_dk68 in preop_ts_dk68.items():
         # Compute functional connectivity. Note signal are already filtered, so no need to do it here
-        ebig_dk68 = ebig_operator.from_fmri(ts_dk68)
+        ebig_dk68 = ebig_operator.from_fMRI(ts_dk68)
         result[sub_id] = ebig_dk68
 
     return result
@@ -73,7 +72,7 @@ def compute_preop_phase_based_intrinsic_ignition():
 
     for sub_id, ts_dk68 in preop_ts_dk68.items():
         # Compute functional connectivity. Note signal are already filtered, so no need to do it here
-        ebig_dk68 = ebig_operator.from_fmri(ts_dk68)
+        ebig_dk68 = ebig_operator.from_fMRI(ts_dk68)
         result[sub_id] = ebig_dk68
 
     return result
