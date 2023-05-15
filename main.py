@@ -6,11 +6,14 @@
 # import WholeBrain.Utils.plotSC
 # import WholeBrain.Observables.FC as FCObservable
 # import WholeBrain.Observables.Metastability as MSObservable
+from subjects import *
 import WholeBrain.Observables.intrinsicIgnition as ISObservable
 from Observables.functional_connectivity import FunctionalConnectivity
+import Observables.swFCD as NonClass_swFCD
 from Observables.metastability import Metastability
 from Observables.event_based_intrinsic_ignition import EventBasedIntrinsicIgnition
 from WholeBrain.Observables.phase_based_intrinsic_ignition import PhaseBasedIntrinsicIgnition
+from WholeBrain.Observables.swfcd import swFCD
 from Filters.bold_band_pass_filter import BOLDBandPassFilter
 import matplotlib.pyplot as plt
 
@@ -87,6 +90,30 @@ def compute_preop_phase_based_intrinsic_ignition_2():
         result[sub_id] = ebig
     return result
 
+def compute_preop_swFCD():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+    ebig_operator = swFCD()
+
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        # Compute functional connectivity. Note signal are already filtered, so no need to do it here
+        swFCD_dk68 = ebig_operator.from_fMRI(
+            ts_dk68,
+            bold_filter=BOLDBandPassFilter(tr=2., flp=0.02, fhi=0.1, k=2, remove_strong_artifacts=3.0)
+        )
+        result[sub_id] = swFCD_dk68
+
+    return result
+
+def compute_preop_swFCD_2():
+    preop_ts_dk68 = subjects.filter_preop_ts_dk68()
+    result = dict()
+
+    for sub_id, ts_dk68 in preop_ts_dk68.items():
+        swFCD = NonClass_swFCD.from_fMRI(ts_dk68, applyFilters=True, removeStrongArtefacts=True)
+        result[sub_id] = swFCD
+    return result
+
 def plot_metastability_box(subjects_ms):
     fig, ax = plt.subplots()
 
@@ -133,6 +160,15 @@ def plot_metastability(subjects_ms):
     plt.show()
 
 if __name__ == '__main__':
+    data_root_path = "data/TVB_brain_tumor/"
+    data_subjects_path = data_root_path + "derivatives/TVB/"
+
+    subjects = Subjects()
+    subjects.initialize(data_subjects_path)
+
+    print("************************* Subjects Info *************************")
+    subjects.pretty_print()
+    print("*****************************************************************")
 
     # We then compute the functional connectivity matrices from the filtered BOLD signals
     # preop_fc_dk68_dict = compute_preop_fc_dk68()
@@ -145,6 +181,9 @@ if __name__ == '__main__':
     # preop_ebig_dk68 = compute_preop_event_based_intrinsic_ignition()
     # preop_ebig_dk68_2 = compute_preop_event_based_intrinsic_ignition_2()
 
-    preop_pbig_dk68 = compute_preop_phase_based_intrinsic_ignition()
-    #preop_pbig_dk68_2 = compute_preop_phase_based_intrinsic_ignition_2()
+    # preop_pbig_dk68 = compute_preop_phase_based_intrinsic_ignition()
+    # preop_pbig_dk68_2 = compute_preop_phase_based_intrinsic_ignition_2()
+
+    preop_swFCD_dk68 = compute_preop_swFCD()
+    preop_swFCD_dk68_2 = compute_preop_swFCD_2()
 
