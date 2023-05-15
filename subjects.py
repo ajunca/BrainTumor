@@ -132,13 +132,18 @@ class Subjects:
                 self.data[sub_id] = sub
 
     def pretty_print(self):
+        print(f'\033[94m', end="")  # Start blue color
         print('{:<15} {:<15} {:<30} {:<15}'.format(
             'ID', 'FMRI_TR (ms)', 'TYPE', 'VOLUME (cm³)',
         ))
+        print(f'\033[0m', end="")   # End blue color
         for sub in self.data.values():
             print('{:<15} {:<15} {:<30} {:<15}'.format(
                 sub.meta.sub_id, str(sub.meta.fmri_tr), sub.meta.tumor_type_and_grade, str(sub.meta.tumor_size),
             ))
+
+    def count(self):
+        return len(self.data)
 
     def for_each(self, func):
         for sub in self.data.values():
@@ -161,17 +166,23 @@ class Subjects:
                 result.data[k] = v
         return result
 
-# class TS:
-#     data = None
-#
-#     def __init__(self, roits_filename=None):
-#         if roits_filename:
-#             with open(roits_filename, 'r') as file:
-#                 lines = file.readlines()
-#                 self.data = []
-#                 for line in lines:
-#                     values = line.split()
-#                     entry = np.array([float(v) for v in values])
-#                     print(len(entry))
-#                     #assert len(entry) == 68
-#                     self.data.append(entry)
+    def get_control_subset(self):
+        return self.filter_subjects(lambda sub: sub.is_control())
+
+    def get_tumor_subset(self):
+        return self.filter_subjects(lambda sub: sub.get_tumor_type_and_grade() != 'none')
+
+    def get_meningioma_subset(self):
+        return self.filter_subjects(lambda sub: 'Meningioma' in sub.get_tumor_type_and_grade())
+
+    def get_glioma_subset(self):
+        return self.filter_subjects(
+            lambda sub: sub.get_tumor_type_and_grade() != 'none' and 'Meningioma' not in sub.get_tumor_type_and_grade()
+        )
+
+    def get_plus_x_cm3_subset(self, x):
+        return self.filter_subjects(lambda sub: sub.get_tumor_size() >= x)
+
+    def keep_only_from_this_set(self, dict_to_filter):
+        assert isinstance(dict_to_filter, dict), "dict_to_filter is not a dictionary"
+        return {k: v for k, v in dict_to_filter.items() if k in self.data}
