@@ -41,7 +41,7 @@ def compute_preop_metastability_dk68():
         tr = subjects.get_subject_by_id(sub_id).get_fmri_tr()/1000.0
         ms_dk68 = ms_operator.from_fMRI(
             ts_dk68,
-            bold_filter=BOLDBandPassFilter(tr=tr, flp=0.007, fhi=0.07, k=2, remove_strong_artifacts=3.0)
+            BOLD_filter=BOLDBandPassFilter(tr=tr, flp=0.007, fhi=0.07, k=2, remove_strong_artifacts=3.0)
         )
         result[sub_id] = ms_dk68
     return result
@@ -99,7 +99,7 @@ def compute_preop_swFCD():
         # Compute functional connectivity. Note signal are already filtered, so no need to do it here
         swFCD_dk68 = ebig_operator.from_fMRI(
             ts_dk68,
-            bold_filter=BOLDBandPassFilter(tr=2., flp=0.02, fhi=0.1, k=2, remove_strong_artifacts=3.0)
+            BOLD_filter=BOLDBandPassFilter(tr=2., flp=0.02, fhi=0.1, k=2, remove_strong_artifacts=3.0)
         )
         result[sub_id] = swFCD_dk68
 

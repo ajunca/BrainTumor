@@ -150,6 +150,7 @@ class Subjects:
     def filter_preop_ts_dk68(self):
         result = dict()
         for sub in self.data.values():
+            # TODO: Maybe we don't need a copy?
             result[sub.get_id()] = sub.preop_data.ts_dk68.copy()
         return result
 
