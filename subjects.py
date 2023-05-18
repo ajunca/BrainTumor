@@ -99,7 +99,7 @@ class Subjects:
     def __init__(self):
         self.data = dict()
 
-    def initialize(self, data_subjects_path):
+    def initialize(self, data_preop_root_path):
         # Read and store subjects metadata. We are not interested in all, so we just store a subset of all. Full
         # layout: [
         #   'participant_id', ' sex', ' age', 'tumor type & grade', 'tumor size (cub cm)', 'tumor location',
@@ -115,7 +115,7 @@ class Subjects:
         # ]
         # We are just interested at the moment in:
         #   ['participant_id', 'fmri TR', 'tumor type & grade', 'tumor size (cub cm)']
-        with open(data_subjects_path + 'participants.tsv', 'r') as file:
+        with open(data_preop_root_path + 'participants.tsv', 'r') as file:
             reader = csv.reader(file, delimiter='\t')
             # Skip tsv header
             next(reader)
@@ -124,7 +124,7 @@ class Subjects:
                 fmri_tr = float(row[6])
                 tumor_type_and_grade = row[3]
                 tumor_size = float(row[4])
-                sub_dir_path = data_subjects_path + row[0] + '/'
+                sub_dir_path = data_preop_root_path + "derivatives/TVB/" + row[0] + '/'
                 # Create and initialize subject
                 sub = Subject()
                 sub.initialize(sub_id, fmri_tr, tumor_type_and_grade, tumor_size, sub_dir_path)
