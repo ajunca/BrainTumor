@@ -17,6 +17,10 @@ from WholeBrain.Observables.swfcd import swFCD
 from Filters.bold_band_pass_filter import BOLDBandPassFilter
 import matplotlib.pyplot as plt
 
+from nilearn import datasets, plotting, surface
+import nibabel as nib
+from mayavi import mlab
+
 
 def compute_preop_fc_dk68():
     preop_ts_dk68 = subjects.filter_preop_ts_dk68()
@@ -159,6 +163,44 @@ def plot_metastability(subjects_ms):
 
     plt.show()
 
+def plot_3d_tumor(subject):
+    # dk_atlas = datasets.fetch_atlas_destrieux_2009()
+    # atlas_filename = dk_atlas['maps']
+    # labels = dk_atlas['labels']
+    #
+    # # Plot the brain parcellation
+    # plotting.plot_roi(atlas_filename, title='Desikan-Killiany Atlas', cmap='Paired')
+    #
+    # plt.show()
+
+    # Fetch the Destrieux atlas
+    destrieux = datasets.fetch_atlas_destrieux_2009()
+
+    # Load the parcellation data
+    parcellation_data = destrieux['maps']
+
+    # Create a plot of the parcellation using nilearn
+    plotting.plot_roi(destrieux['maps'], cmap='Paired', title='Desikan-Killiany Parcellation')
+
+    # # Add a tumor location represented by a volume
+    # tumor_location = np.zeros_like(parcellation_data)
+    # tumor_location[tumor_coordinates] = tumor_volume_in_cm3
+    #
+    # # Plot the tumor volume
+    # plotting.plot_roi(tumor_location, cmap='Reds', colorbar=True, alpha=0.5)
+
+    # Display the visualization
+    plotting.show()
+
+def plot_3d_tumor_2(subject):
+
+    dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
+
+    view = plotting.view_markers(
+        dmn_coords, marker_color='auto', marker_size=5)
+
+    view.open_in_browser()
+
 if __name__ == '__main__':
     data_root_path = "data/TVB_brain_tumor/"
     data_subjects_path = data_root_path + "derivatives/TVB/"
@@ -184,6 +226,8 @@ if __name__ == '__main__':
     # preop_pbig_dk68 = compute_preop_phase_based_intrinsic_ignition()
     # preop_pbig_dk68_2 = compute_preop_phase_based_intrinsic_ignition_2()
 
-    preop_swFCD_dk68 = compute_preop_swFCD()
-    preop_swFCD_dk68_2 = compute_preop_swFCD_2()
+    # preop_swFCD_dk68 = compute_preop_swFCD()
+    # preop_swFCD_dk68_2 = compute_preop_swFCD_2()
+
+    plot_3d_tumor_2(subjects.get_subject_by_id('PAT05'))
 
