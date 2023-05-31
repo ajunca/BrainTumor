@@ -1,4 +1,5 @@
 #!/bin/sh
 
-cd data/ds001226/ || { echo "Failure"; exit 1; }
-./ds001226-5.0.0.sh
+datalad clone https://github.com/OpenNeuroDatasets/ds001226.git
+cd ds001226/ || { echo "Failure"; exit 1; }
+datalad get .
