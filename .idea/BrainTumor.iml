@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/external/whole_brain" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/external/whole_brain/WholeBrain" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/venv-310" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (BrainTumor)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

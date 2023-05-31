@@ -1,4 +1,9 @@
 #!/bin/sh
 
-cd data/ds001226/ || { echo "Failure"; exit 1; }
-./ds001226-5.0.0.sh
+cd data/ || { echo "Failure"; exit 1; }
+
+# Download ds001226
+./download_ds001226.sh
+
+# Download ds001226-fmriprep
+./download_ds001226-fmriprep.sh
