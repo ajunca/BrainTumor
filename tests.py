@@ -202,15 +202,27 @@ def plot_3d_tumor_2(subject):
     view.open_in_browser()
 
 if __name__ == '__main__':
-    data_root_path = "data/TVB_brain_tumor/"
-    data_subjects_path = data_root_path + "derivatives/TVB/"
+    import nibabel
+    lh, lctab, lnames = nibabel.freesurfer.read_annot("data/ds001226-fmriprep/sourcedata/freesurfer/sub-PAT06/label/lh.aparc.annot", orig_ids=False)
+    print (lnames)
+    for id in np.unique(lh[0]):
+        print ('id = %d, sum = %d' % (id, (lh[0] == id).sum()))
 
-    subjects = Subjects()
-    subjects.initialize(data_subjects_path)
+    tumor_mask = nibabel.load("data/ds001226/derivatives/tumor_masks/sub-PAT06/anat/sub-PAT06_space_T1_label-tumor.nii")
+    print(tumor_mask.header)
+    print(tumor_mask.get_fdata().shape)
+    print(tumor_mask.get_fdata())
 
-    print("************************* Subjects Info *************************")
-    subjects.pretty_print()
-    print("*****************************************************************")
+# if __name__ == '__main__':
+    # data_root_path = "data/TVB_brain_tumor/"
+    # data_subjects_path = data_root_path + "derivatives/TVB/"
+    #
+    # subjects = Subjects()
+    # subjects.initialize(data_subjects_path)
+    #
+    # print("************************* Subjects Info *************************")
+    # subjects.pretty_print()
+    # print("*****************************************************************")
 
     # We then compute the functional connectivity matrices from the filtered BOLD signals
     # preop_fc_dk68_dict = compute_preop_fc_dk68()
@@ -229,5 +241,5 @@ if __name__ == '__main__':
     # preop_swFCD_dk68 = compute_preop_swFCD()
     # preop_swFCD_dk68_2 = compute_preop_swFCD_2()
 
-    plot_3d_tumor_2(subjects.get_subject_by_id('PAT05'))
+    # plot_3d_tumor_2(subjects.get_subject_by_id('PAT05'))
 
