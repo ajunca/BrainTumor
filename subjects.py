@@ -1,8 +1,13 @@
 import zipfile
 import numpy as np
 from scipy.io import loadmat
-import csv
-import multiprocessing as mp
+import os
+import pandas as pd
+
+class SubjectsPaths:
+    def __init__(self, sub_id, data_dir):
+        self.tvb_dir = os.path.join(data_dir, 'ds001226/derivatives/TVB', sub_id)
+        self.derivative_dir = os.path.join(data_dir, 'derivatives', sub_id)
 
 
 # Structural Connectivity Data
@@ -34,9 +39,9 @@ class StructuralCon:
 
 
 class SubjectMeta:
-    def __init__(self, sub_id, sub_dir_path, fmri_tr, tumor_type_and_grade, tumor_size):
+    def __init__(self, sub_id, data_path, fmri_tr, tumor_type_and_grade, tumor_size):
         self.sub_id = sub_id  # String
-        self.dir_path = sub_dir_path  # String
+        self.paths = SubjectsPaths(sub_id, data_path)
         self.fmri_tr = fmri_tr  # Float in ms
         self.tumor_type_and_grade = tumor_type_and_grade  # String
         self.tumor_size = tumor_size  # Float in cm³
@@ -48,10 +53,20 @@ class SubjectData:
         self.ts = ts
         self.ts_dk68 = ts_dk68
 
+class SubjectTumorRegions:
+    def __init__(self, tumor_regions_dataframe):
+        self.tumor_regions_df = tumor_regions_dataframe
+
+    def list_tumor_regions_names(self):
+        return self.tumor_regions_df[self.tumor_regions_df['Volume_mm3'] != 0.0]['RegionName'].tolist()
+
+    def list_tumor_regions_ids(self):
+        self.tumor_regions_df[self.tumor_regions_df['Volume_mm3'] != 0.0]['RegionId'].tolist()
 
 class Subject:
     def __init__(self):
         self.meta = None
+        self.tumor_regions = None
         self.preop_data = None
         self.postop_data = None
 
@@ -60,9 +75,13 @@ class Subject:
                    fmri_tr,
                    tumor_type_and_grade,
                    tumor_size,
-                   sub_folder_path):
+                   data_dir):
         # Create subjects metadata
-        self.meta = SubjectMeta(sub_id, sub_folder_path, fmri_tr, tumor_type_and_grade, tumor_size)
+        self.meta = SubjectMeta(sub_id, data_dir, fmri_tr, tumor_type_and_grade, tumor_size)
+
+        # Load tumor Parcellation
+        self._load_tumor_regions()
+
         self._init_preop_data()
         # TODO: Initialize postop data?
 
@@ -82,24 +101,38 @@ class Subject:
     def is_control(self):
         return 'CON' in self.meta.sub_id
 
-    def get_dir_path(self):
-        return self.meta.dir_path
+    def get_paths(self):
+        return self.meta.paths
 
     def _init_preop_data(self):
-        sc_dk68 = StructuralCon(zip_filename=self.meta.dir_path + 'ses-preop/SC.zip')
-        mat_contents = loadmat(self.meta.dir_path + 'ses-preop/FC.mat')
+        sc_dk68 = StructuralCon(zip_filename=os.path.join(self.meta.paths.tvb_dir, 'ses-preop/SC.zip'))
+        mat_contents = loadmat(os.path.join(self.meta.paths.tvb_dir, 'ses-preop/FC.mat'))
         self.preop_data = SubjectData(
             sc_dk68,
-            np.transpose(mat_contents['' + self.meta.sub_id + 'T1_ROIts']),
-            np.transpose(mat_contents['' + self.meta.sub_id + 'T1_ROIts_DK68'])
+            np.transpose(mat_contents['' + self.meta.sub_id[4:] + 'T1_ROIts']),
+            np.transpose(mat_contents['' + self.meta.sub_id[4:] + 'T1_ROIts_DK68'])
         )
+
+    def _load_tumor_regions(self):
+        # If it is not control, load corresponding file
+        if not self.is_control():
+            self.tumor_regions = SubjectTumorRegions(pd.read_csv(
+                os.path.join(self.meta.paths.derivative_dir, 'tumor_regions.tsv'),
+                sep='\t'
+            ))
+
+    def list_tumor_regions_names(self):
+        return self.tumor_regions.list_tumor_regions_names() if self.tumor_regions else []
+
+    def list_tumor_regions_ids(self):
+        return self.tumor_regions.list_tumor_regions_ids() if self.tumor_regions else []
 
 class Subjects:
 
     def __init__(self):
         self.data = dict()
 
-    def initialize(self, data_preop_root_path):
+    def initialize(self, data_dir):
         # Read and store subjects metadata. We are not interested in all, so we just store a subset of all. Full
         # layout: [
         #   'participant_id', ' sex', ' age', 'tumor type & grade', 'tumor size (cub cm)', 'tumor location',
@@ -115,31 +148,36 @@ class Subjects:
         # ]
         # We are just interested at the moment in:
         #   ['participant_id', 'fmri TR', 'tumor type & grade', 'tumor size (cub cm)']
-        with open(data_preop_root_path + 'participants.tsv', 'r') as file:
-            reader = csv.reader(file, delimiter='\t')
-            # Skip tsv header
-            next(reader)
-            for row in reader:
-                sub_id = row[0][4:]
-                fmri_tr = float(row[6])
-                tumor_type_and_grade = row[3]
-                tumor_size = float(row[4])
-                sub_dir_path = data_preop_root_path + "derivatives/TVB/" + row[0] + '/'
-                # Create and initialize subject
-                sub = Subject()
-                sub.initialize(sub_id, fmri_tr, tumor_type_and_grade, tumor_size, sub_dir_path)
-                # Store the subject
-                self.data[sub_id] = sub
+        participants = pd.read_csv(
+            os.path.join(data_dir, 'ds001226/participants.tsv'),
+            sep='\t'
+        )
+        for idx, row in participants.iterrows():
+            sub = Subject()
+            sub.initialize(
+                sub_id=row['participant_id'],
+                fmri_tr=float(row['fmri TR']),
+                tumor_type_and_grade=row['tumor type & grade'],
+                tumor_size=float(row['tumor size (cub cm)']),
+                data_dir=data_dir
+            )
+            self.data[row['participant_id']] = sub
+
+
 
     def pretty_print(self):
         print(f'\033[94m', end="")  # Start blue color
-        print('{:<15} {:<15} {:<30} {:<15}'.format(
-            'ID', 'FMRI_TR (ms)', 'TYPE', 'VOLUME (cm³)',
+        print('{:<15} {:<15} {:<30} {:<15} {:<15}'.format(
+            'ID', 'FMRI_TR (ms)', 'TYPE', 'VOLUME (cm³)', '# REGIONS WITH TUMOR'
         ))
         print(f'\033[0m', end="")   # End blue color
         for sub in self.data.values():
-            print('{:<15} {:<15} {:<30} {:<15}'.format(
-                sub.meta.sub_id, str(sub.meta.fmri_tr), sub.meta.tumor_type_and_grade, str(sub.meta.tumor_size),
+            print('{:<15} {:<15} {:<30} {:<15} {:<15}'.format(
+                sub.meta.sub_id,
+                str(sub.meta.fmri_tr),
+                sub.meta.tumor_type_and_grade,
+                str(sub.meta.tumor_size),
+                str(len(sub.list_tumor_regions_names()))
             ))
 
     def count(self):

@@ -202,16 +202,14 @@ def plot_3d_tumor_2(subject):
     view.open_in_browser()
 
 if __name__ == '__main__':
-    import nibabel
-    lh, lctab, lnames = nibabel.freesurfer.read_annot("data/ds001226-fmriprep/sourcedata/freesurfer/sub-PAT06/label/lh.aparc.annot", orig_ids=False)
-    print (lnames)
-    for id in np.unique(lh[0]):
-        print ('id = %d, sum = %d' % (id, (lh[0] == id).sum()))
+    regions = pd.read_csv(
+                os.path.join('data/derivatives/sub-PAT01', 'tumor_regions.tsv'),
+                sep='\t'
+            )
 
-    tumor_mask = nibabel.load("data/ds001226/derivatives/tumor_masks/sub-PAT06/anat/sub-PAT06_space_T1_label-tumor.nii")
-    print(tumor_mask.header)
-    print(tumor_mask.get_fdata().shape)
-    print(tumor_mask.get_fdata())
+    df = regions[regions['Volume_mm3'] != 0.0]
+
+    print (regions[regions['Volume_mm3'] != 0.0]['RegionName'].tolist())
 
 # if __name__ == '__main__':
     # data_root_path = "data/TVB_brain_tumor/"
