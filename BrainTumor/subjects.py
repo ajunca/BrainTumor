@@ -4,6 +4,7 @@ from scipy.io import loadmat
 import os
 import pandas as pd
 
+
 class SubjectsPaths:
     def __init__(self, sub_id, data_dir):
         self.tvb_dir = os.path.join(data_dir, 'ds001226/derivatives/TVB', sub_id)
@@ -46,29 +47,64 @@ class SubjectMeta:
         self.tumor_type_and_grade = tumor_type_and_grade  # String
         self.tumor_size = tumor_size  # Float in cm³
 
+    @property
+    def is_control(self):
+        return 'CON' in self.sub_id
+
 
 class SubjectData:
-    def __init__(self, sc_dk68, ts, ts_dk68):
-        self.sc_dk68 = sc_dk68
-        self.ts = ts
-        self.ts_dk68 = ts_dk68
+    def __init__(self, sc_dk68, ts, ts_dk68, fc_dk68):
+        self._sc_dk68 = sc_dk68
+        self._ts = ts
+        self._ts_dk68 = ts_dk68
+        self._fc_dk68 = fc_dk68
+
+    @property
+    def sc_dk68(self):
+        return self._sc_dk68
+
+    @property
+    def ts(self):
+        return self._ts
+
+    @property
+    def ts_dk68(self):
+        return self._ts_dk68
+
+    @property
+    def fc_dk68(self):
+        return self._fc_dk68
+
 
 class SubjectTumorRegions:
     def __init__(self, tumor_regions_dataframe):
-        self.tumor_regions_df = tumor_regions_dataframe
+        self._tumor_regions_df = tumor_regions_dataframe
 
     def list_tumor_regions_names(self):
-        return self.tumor_regions_df[self.tumor_regions_df['Volume_mm3'] != 0.0]['RegionName'].tolist()
+        return self._tumor_regions_df[self._tumor_regions_df['Volume_mm3'] != 0.0]['RegionName'].tolist()
 
     def list_tumor_regions_ids(self):
-        self.tumor_regions_df[self.tumor_regions_df['Volume_mm3'] != 0.0]['RegionId'].tolist()
+        self._tumor_regions_df[self._tumor_regions_df['Volume_mm3'] != 0.0]['RegionId'].tolist()
+
+    def is_tumor_region_by_id(self, idx):
+        assert idx < len(self._tumor_regions_df.index)
+        return self._tumor_regions_df.loc[idx]['Volume_mm3'] != 0.0
+
 
 class Subject:
     def __init__(self):
         self.meta = None
-        self.tumor_regions = None
-        self.preop_data = None
-        self.postop_data = None
+        self._tumor_regions = None
+        self._preop_data = None
+        # self._postop_data = None
+
+    @property
+    def preop_data(self):
+        return self._preop_data
+
+    @property
+    def tumor_regions(self):
+        return self._tumor_regions
 
     def initialize(self,
                    sub_id,
@@ -79,7 +115,6 @@ class Subject:
         # Create subjects metadata
         self.meta = SubjectMeta(sub_id, data_dir, fmri_tr, tumor_type_and_grade, tumor_size)
 
-        # Load tumor Parcellation
         self._load_tumor_regions()
 
         self._init_preop_data()
@@ -99,7 +134,7 @@ class Subject:
         return self.meta.tumor_size
 
     def is_control(self):
-        return 'CON' in self.meta.sub_id
+        return self.meta.is_control
 
     def get_paths(self):
         return self.meta.paths
@@ -107,16 +142,17 @@ class Subject:
     def _init_preop_data(self):
         sc_dk68 = StructuralCon(zip_filename=os.path.join(self.meta.paths.tvb_dir, 'ses-preop/SC.zip'))
         mat_contents = loadmat(os.path.join(self.meta.paths.tvb_dir, 'ses-preop/FC.mat'))
-        self.preop_data = SubjectData(
+        self._preop_data = SubjectData(
             sc_dk68,
             np.transpose(mat_contents['' + self.meta.sub_id[4:] + 'T1_ROIts']),
-            np.transpose(mat_contents['' + self.meta.sub_id[4:] + 'T1_ROIts_DK68'])
+            np.transpose(mat_contents['' + self.meta.sub_id[4:] + 'T1_ROIts_DK68']),
+            np.transpose(mat_contents['FC_cc_DK68'])
         )
 
     def _load_tumor_regions(self):
         # If it is not control, load corresponding file
         if not self.is_control():
-            self.tumor_regions = SubjectTumorRegions(pd.read_csv(
+            self._tumor_regions = SubjectTumorRegions(pd.read_csv(
                 os.path.join(self.meta.paths.derivative_dir, 'tumor_regions.tsv'),
                 sep='\t'
             ))
@@ -126,6 +162,7 @@ class Subject:
 
     def list_tumor_regions_ids(self):
         return self.tumor_regions.list_tumor_regions_ids() if self.tumor_regions else []
+
 
 class Subjects:
 
@@ -163,14 +200,12 @@ class Subjects:
             )
             self.data[row['participant_id']] = sub
 
-
-
     def pretty_print(self):
         print(f'\033[94m', end="")  # Start blue color
         print('{:<15} {:<15} {:<30} {:<15} {:<15}'.format(
             'ID', 'FMRI_TR (ms)', 'TYPE', 'VOLUME (cm³)', '# REGIONS WITH TUMOR'
         ))
-        print(f'\033[0m', end="")   # End blue color
+        print(f'\033[0m', end="")  # End blue color
         for sub in self.data.values():
             print('{:<15} {:<15} {:<30} {:<15} {:<15}'.format(
                 sub.meta.sub_id,
@@ -224,3 +259,6 @@ class Subjects:
     def keep_only_from_this_set(self, dict_to_filter):
         assert isinstance(dict_to_filter, dict), "dict_to_filter is not a dictionary"
         return {k: v for k, v in dict_to_filter.items() if k in self.data}
+
+    def items(self):
+        return self.data.items()

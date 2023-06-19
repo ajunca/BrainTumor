@@ -6,7 +6,7 @@
 # import WholeBrain.Utils.plotSC
 # import WholeBrain.Observables.FC as FCObservable
 # import WholeBrain.Observables.Metastability as MSObservable
-from subjects import *
+from BrainTumor.subjects import *
 import WholeBrain.Observables.intrinsicIgnition as ISObservable
 from Observables.functional_connectivity import FunctionalConnectivity
 import Observables.swFCD as NonClass_swFCD
@@ -17,10 +17,11 @@ from WholeBrain.Observables.swfcd import swFCD
 from Filters.bold_band_pass_filter import BOLDBandPassFilter
 import matplotlib.pyplot as plt
 
-from nilearn import datasets, plotting, surface
-import nibabel as nib
-from mayavi import mlab
+from nilearn import datasets, plotting
 
+data_dir = "data"
+subjects = Subjects()
+subjects.initialize(data_dir)
 
 def compute_preop_fc_dk68():
     preop_ts_dk68 = subjects.filter_preop_ts_dk68()
@@ -201,17 +202,8 @@ def plot_3d_tumor_2(subject):
 
     view.open_in_browser()
 
+
 if __name__ == '__main__':
-    regions = pd.read_csv(
-                os.path.join('data/derivatives/sub-PAT01', 'tumor_regions.tsv'),
-                sep='\t'
-            )
-
-    df = regions[regions['Volume_mm3'] != 0.0]
-
-    print (regions[regions['Volume_mm3'] != 0.0]['RegionName'].tolist())
-
-# if __name__ == '__main__':
     # data_root_path = "data/TVB_brain_tumor/"
     # data_subjects_path = data_root_path + "derivatives/TVB/"
     #
@@ -240,4 +232,9 @@ if __name__ == '__main__':
     # preop_swFCD_dk68_2 = compute_preop_swFCD_2()
 
     # plot_3d_tumor_2(subjects.get_subject_by_id('PAT05'))
+
+    import numpy as np
+
+    x = np.array([[0, 1, 2], [2, 1, 0]])
+    print(np.corrcoef(x))
 
