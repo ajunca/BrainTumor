@@ -13,8 +13,16 @@ class SubjectsPaths:
 
 # Structural Connectivity Data
 class StructuralCon:
-    weights = None  # 68*68 numpy float matrix
-    centres = None  # List consisting of region centers (68). Format: [region_name, x, y, z]
+    _weights = None  # 68*68 numpy float matrix
+    _centres = None  # List consisting of region centers (68). Format: [region_name, x, y, z]
+
+    @property
+    def weights(self):
+        return self._weights
+
+    @property
+    def centers(self):
+        return self._centres
 
     def __init__(self, zip_filename=None):
         if zip_filename is not None:
@@ -27,16 +35,16 @@ class StructuralCon:
                 contents_str = weights_file.read().decode('utf-8')
                 rows = contents_str.strip().split('\n')
                 data = [row.strip().split(' ') for row in rows]
-                self.weights = np.array(data, dtype=float)
+                self._weights = np.array(data, dtype=float)
             # Read centres
             with zip_file.open('centres.txt') as centres_file:
                 contents_str = centres_file.read().decode('utf-8')
                 rows = contents_str.strip().split('\n')
-                self.centres = []
+                self._centres = []
                 for row in rows:
                     region, x, y, z = row.strip().split('\t')
-                    self.centres.append([region, float(x), float(y), float(z)])
-                assert len(self.centres) == 68
+                    self._centres.append([region, float(x), float(y), float(z)])
+                assert len(self._centres) == 68
 
 
 class SubjectMeta:
@@ -159,6 +167,9 @@ class Subject:
 
     def list_tumor_regions_names(self):
         return self.tumor_regions.list_tumor_regions_names() if self.tumor_regions else []
+
+    def count_tumor_regions(self):
+        return len(self.list_tumor_regions_names())
 
     def list_tumor_regions_ids(self):
         return self.tumor_regions.list_tumor_regions_ids() if self.tumor_regions else []
