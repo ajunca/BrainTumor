@@ -89,14 +89,17 @@ class SubjectTumorRegions:
         self._tumor_regions_df = tumor_regions_dataframe
 
     def list_tumor_regions_names(self):
-        return self._tumor_regions_df[self._tumor_regions_df['Volume_mm3'] != 0.0]['RegionName'].tolist()
+        return self._tumor_regions_df[self._tumor_regions_df['Tumor_volume_mm3'] != 0.0]['RegionName'].tolist()
 
     def list_tumor_regions_ids(self):
-        self._tumor_regions_df[self._tumor_regions_df['Volume_mm3'] != 0.0]['RegionId'].tolist()
+        self._tumor_regions_df[self._tumor_regions_df['Tumor_volume_mm3'] != 0.0]['RegionId'].tolist()
 
     def is_tumor_region_by_id(self, idx):
         assert idx < len(self._tumor_regions_df.index)
-        return self._tumor_regions_df.loc[idx]['Volume_mm3'] != 0.0
+        return self._tumor_regions_df.loc[idx]['Tumor_volume_mm3'] != 0.0
+
+    def get_tumor_volume_percentage_by_id(self, idx):
+        return self._tumor_regions_df.loc[idx]['Tumor_volume_percentage']
 
 
 class Subject:

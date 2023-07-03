@@ -5,6 +5,21 @@ fsaverage_parcel_file = 'data/ds001226-fmriprep/sourcedata/freesurfer/fsaverage/
 derivative_dir = 'data/derivatives/'
 tumor_masks_dir = 'data/ds001226/derivatives/tumor_masks/'
 lut_table_file = 'data/derivatives/parcellation_lut.txt'
+fsaverage_stats_file = os.path.join(derivative_dir, 'fsaverage-aparc+aseg.stats')
+
+# Let's output stats for the fsaverage of each reagion. So afterward for example we can know how much percentage of the
+# region has tumor
+os.system('mri_segstats --seg ' + fsaverage_parcel_file + ' --ctab ' + lut_table_file + ' --sum ' + fsaverage_stats_file)
+
+# We read the table after creation
+fsaverage_segstats_table = pd.read_csv(
+    fsaverage_stats_file,
+    sep='\s+',
+    comment='#',
+    header=None,
+    names=['Index', 'SegId', 'NVoxels', 'Volume_mm3', 'RegionName'],
+    index_col='RegionName'
+)
 
 # For each subject we need to compute which regions on the Desikan-Killiany parcellation have
 # tumor (this is, at least one voxel intersection). It is performed as following:
@@ -17,7 +32,6 @@ lut_table_file = 'data/derivatives/parcellation_lut.txt'
 #     and not 34+34, why?
 #       - One region is ignored based on datasheet delivered from dataset authors:
 #         ctx-XX-corpuscallosum
-
 for pat in os.listdir(tumor_masks_dir):
     if os.path.isdir(tumor_masks_dir + pat):
         print ("------------- Processing patient " + pat + " -------------")
@@ -59,7 +73,9 @@ for pat in os.listdir(tumor_masks_dir):
 
         # Let's create a table that has for each region of the parcellation its volumetric tumor intersection in mm³
         tumor_regions = lut_table[['RegionName']].copy()
-        tumor_regions['Volume_mm3'] = {k: segstats_table['Volume_mm3'].get(r['RegionName'], 0.0) for k, r in lut_table.iterrows()}
+        tumor_regions['Tumor_volume_mm3'] = {k: segstats_table['Volume_mm3'].get(r['RegionName'], 0.0) for k, r in lut_table.iterrows()}
+        tumor_regions['Fsaverage_volume_mm3'] = {k: fsaverage_segstats_table['Volume_mm3'].get(r['RegionName'], 0.0) for k, r in lut_table.iterrows()}
+        tumor_regions['Tumor_volume_percentage'] = {k: (segstats_table['Volume_mm3'].get(r['RegionName'], 0.0))/(fsaverage_segstats_table['Volume_mm3'].get(r['RegionName'], 0.0)) for k, r in lut_table.iterrows()}
 
         # Save tumor regions
         output_tumor_regions_file = os.path.join(output_pat_dir, 'tumor_regions.tsv')
