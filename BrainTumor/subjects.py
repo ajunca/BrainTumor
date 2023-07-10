@@ -101,6 +101,9 @@ class SubjectTumorRegions:
     def get_tumor_volume_percentage_by_id(self, idx):
         return self._tumor_regions_df.loc[idx]['Tumor_volume_percentage']
 
+    def get_tumor_volumes_percentage(self):
+        return self._tumor_regions_df['Tumor_volume_percentage'].tolist()
+
 
 class Subject:
     def __init__(self):
@@ -269,6 +272,11 @@ class Subjects:
 
     def get_plus_x_cm3_subset(self, x):
         return self.filter_subjects(lambda sub: sub.get_tumor_size() >= x)
+
+    def exclude_from_subset(self, exclude_list):
+        return self.filter_subjects(
+            lambda sub: sub.get_id() not in exclude_list
+        )
 
     def keep_only_from_this_set(self, dict_to_filter):
         assert isinstance(dict_to_filter, dict), "dict_to_filter is not a dictionary"
